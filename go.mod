@@ -2,7 +2,10 @@ module github.com/StarTerrarium/hisame
 
 go 1.22.7
 
-require fyne.io/fyne/v2 v2.5.1
+require (
+	fyne.io/fyne/v2 v2.5.1
+	github.com/sirupsen/logrus v1.9.3
+)
 
 require (
 	fyne.io/systray v1.11.0 // indirect
