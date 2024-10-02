@@ -63,8 +63,6 @@ func InitLogger() func() {
 		}
 	}
 
-	logrus.Infof("===== Welcome to Hisame (Log Level: %s) =====", level)
-
 	// Return a cleanup function
 	return func() {
 		logrus.Info("Hisame is shutting down")
