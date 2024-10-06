@@ -58,7 +58,7 @@ func InitLogger() func() {
 				logrus.Warnf("Error opening log file; file logging will be disabled: %v", err)
 			} else {
 				logrus.SetOutput(io.MultiWriter(os.Stdout, logFile))
-				logrus.Debugf("Logging to file %s", logPath)
+				logrus.Infof("Logging to file %s", logPath)
 			}
 		}
 	}
@@ -80,11 +80,11 @@ func SetLogLevel(level logrus.Level, bypassEnvVar bool) {
 	if !bypassEnvVar {
 		if _, err := getLogLevelFromEnv(); err == nil {
 			// Environment variable is set; do not override
-			logrus.Infof("Log level not changed due to %s being set. Current level: %s", logLevelEnvVar, logrus.GetLevel())
+			logrus.Debugf("Log level not changed due to %s being set. Current level: %s", logLevelEnvVar, logrus.GetLevel())
 			return
 		}
 	}
-	logrus.Infof("Setting log level to %s", level)
+	logrus.Debugf("Setting log level to %s", level)
 	logrus.SetLevel(level)
 }
 
