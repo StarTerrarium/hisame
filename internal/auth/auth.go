@@ -61,19 +61,26 @@ func (auth *Auth) StartCallbackServer() error {
 	return nil
 }
 
-func (auth *Auth) WaitForToken() (string, error) {
+// WaitForToken sits and waits for a token to be received on the channel.  This is a way to block and wait
+// for a token.  Also accepts a context as an arg so we can stop waiting if the user cancels the login flow.
+func (auth *Auth) WaitForToken(ctx context.Context) (string, error) {
 	logrus.Debug("Waiting for token to arrive on /token endpoint")
-	// Wait for the token to be received
-	token := <-auth.tokenChannel
-	if token == "" {
-		logrus.Warn("Token was empty")
-		return "", errors.New("error retrieving token")
-	}
-	logrus.Info("Received token: " + token)
-	// Shut down the server gracefully once the token is received
-	auth.StopCallbackServer()
+	// Ensure the callback server is stopped after we finish waiting
+	defer auth.StopCallbackServer()
 
-	return token, nil
+	// Wait for the token to be received
+	select {
+	case <-ctx.Done():
+		logrus.Debug("WaitForToken exiting because context is done")
+		return "", ctx.Err()
+	case token, ok := <-auth.tokenChannel:
+		if !ok || token == "" {
+			logrus.Warn("Failed to receive token")
+			return "", errors.New("failed to receive token")
+		}
+		logrus.Info("Received token")
+		return token, nil
+	}
 }
 
 func (auth *Auth) StopCallbackServer() {
