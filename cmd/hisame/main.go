@@ -11,7 +11,6 @@ import (
 )
 
 func main() {
-	// TODO:  Make log level configurable from config file
 	cleanupLogger := utils.InitLogger()
 	defer cleanupLogger()
 
@@ -22,9 +21,7 @@ func main() {
 		cfg = config.DefaultConfig()
 	}
 
-	appState := state.InitialiseAppState(cfg)
-	// Temporary, just to get this to compile.
-	appState.GetConfig()
+	state.InitialiseAppState(cfg)
 
 	logrus.Infof("App state initialised.  Log level: %s", logrus.GetLevel().String())
 
@@ -33,16 +30,8 @@ func main() {
 	// Starting with a huge size makes the application start maximised, at least in KDE plasma.
 	// TODO: Confirm behaviour on other DE & OS
 	w.Resize(fyne.NewSize(7680, 4320))
-	sm := ui.NewScreenManager(w)
 
-	// Load token if exists & check if expiring soon
-	authenticated := false // Placeholder for now, force login every time
-
-	if !authenticated {
-		sm.ShowLoginScreen(func() {
-			logrus.Info("Inside on success callback")
-		})
-	}
+	ui.InitialiseScreenManager(w)
 
 	logrus.Info("Starting GUI")
 	w.ShowAndRun()

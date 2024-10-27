@@ -3,3 +3,6 @@ run:
 
 test:
   go test ./...
+
+race:
+  go test -race ./...

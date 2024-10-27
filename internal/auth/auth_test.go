@@ -1,7 +1,9 @@
 package auth
 
 import (
+	"context"
 	"encoding/json"
+	"errors"
 	"io"
 	"net"
 	"net/http"
@@ -133,7 +135,10 @@ func TestWaitForToken(t *testing.T) {
 		a.tokenChannel <- "test_token"
 	}()
 
-	token, err := a.WaitForToken()
+	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+	defer cancel()
+
+	token, err := a.WaitForToken(ctx)
 	if err != nil {
 		t.Fatalf("Expected WaitForToken to return without error, got %v", err)
 	}
@@ -152,13 +157,38 @@ func TestWaitForToken_EmptyToken(t *testing.T) {
 		a.tokenChannel <- ""
 	}()
 
-	token, err := a.WaitForToken()
+	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+	defer cancel()
+
+	token, err := a.WaitForToken(ctx)
 	if err == nil {
 		t.Fatal("Expected error when receiving empty token")
 	}
 
 	if token != "" {
 		t.Fatalf("Expected empty token, got '%s'", token)
+	}
+}
+
+func TestWaitForToken_ContextCancelled(t *testing.T) {
+	a := NewAuth()
+
+	// Create a context that we'll cancel
+	ctx, cancel := context.WithCancel(context.Background())
+
+	// Start a goroutine to cancel the context after a short delay
+	go func() {
+		time.Sleep(100 * time.Millisecond)
+		cancel()
+	}()
+
+	token, err := a.WaitForToken(ctx)
+	if err == nil || !errors.Is(err, context.Canceled) {
+		t.Fatalf("Expected context canceled error, got %v", err)
+	}
+
+	if token != "" {
+		t.Fatalf("Expected empty token due to context cancellation, got '%s'", token)
 	}
 }
 

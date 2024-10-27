@@ -39,10 +39,12 @@ func InitialiseAppState(cfg *config.UserConfig) *AppState {
 	return instance
 }
 
+// GetAppState returns the singleton instance of AppState.
+// It panics if InitialiseAppState has not been called yet.
 func GetAppState() *AppState {
-	once.Do(func() {
-		instance = &AppState{}
-	})
+	if instance == nil {
+		logrus.Panic("Attempt to access AppState before initialising.  This should never happen and is a bug in the code.  Please open an issue.")
+	}
 	return instance
 }
 
