@@ -103,6 +103,6 @@ func (lp *LoginPage) startLoginFlow(authInstance *auth.Auth) {
 
 		loadingDialog.Hide()
 		logrus.Info("Login complete")
-		getScreenManager().HandleLoginSuccess()
+		getScreenManager().HandleLoginSuccess(token)
 	}()
 }

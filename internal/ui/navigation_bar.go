@@ -51,13 +51,15 @@ func (nb *NavigationBar) buildContent() fyne.CanvasObject {
 	})
 	nb.logoutButton = widget.NewButton("Logout", func() {
 		logrus.Debug("Logout button clicked")
-		// Handle logout logic
+		getScreenManager().HandleLogout()
 	})
 
 	// Initially disable all buttons
-	buttonsToDisable := []*widget.Button{nb.animeButton, nb.mangaButton, nb.searchButton, nb.settingsButton, nb.logoutButton}
-	for _, btn := range buttonsToDisable {
-		btn.Disable()
+	if !getScreenManager().isAuth {
+		buttonsToDisable := []*widget.Button{nb.animeButton, nb.mangaButton, nb.searchButton, nb.settingsButton, nb.logoutButton}
+		for _, btn := range buttonsToDisable {
+			btn.Disable()
+		}
 	}
 
 	// Left and right containers

@@ -22,8 +22,12 @@ func main() {
 	}
 
 	state.InitialiseAppState(cfg)
-
 	logrus.Infof("App state initialised.  Log level: %s", logrus.GetLevel().String())
+
+	err = state.GetAppState().LoadAuthToken()
+	if err != nil {
+		logrus.Warnf("Failed to load token from disk: %v", err)
+	}
 
 	a := app.NewWithID("Hisame")
 	w := a.NewWindow("Hisame")
