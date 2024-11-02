@@ -2,6 +2,7 @@ package ui
 
 import (
 	"fyne.io/fyne/v2"
+	"github.com/StarTerrarium/hisame/internal/state"
 	"github.com/sirupsen/logrus"
 	"sync"
 )
@@ -32,7 +33,7 @@ func InitialiseScreenManager(window fyne.Window) {
 	screenManagerOnce.Do(func() {
 		instance = &ScreenManager{
 			window: window,
-			isAuth: false,
+			isAuth: state.GetAppState().GetAuthToken() != "",
 		}
 		instance.mainScreen = NewMainScreen(window)
 		instance.showInitialPage()
@@ -51,8 +52,14 @@ func (sm *ScreenManager) ShowPage(page Page) {
 	sm.mainScreen.ShowPage(page)
 }
 
-func (sm *ScreenManager) HandleLoginSuccess() {
+func (sm *ScreenManager) HandleLoginSuccess(token string) {
 	sm.isAuth = true
+	appState := state.GetAppState()
+	appState.SetAuthToken(token)
+	err := appState.SaveAuthToken()
+	if err != nil {
+		logrus.Errorf("Failed to save auth token: %v", err)
+	}
 	// Enable navigation buttons
 	sm.mainScreen.navigationBar.UpdateAuthenticationState(sm.isAuth)
 	sm.ShowPage(NewAnimeListPage())
@@ -61,7 +68,10 @@ func (sm *ScreenManager) HandleLoginSuccess() {
 func (sm *ScreenManager) HandleLogout() {
 	sm.isAuth = false
 	// Clear authentication tokens and state
-	//sm.appState.ClearAuthToken()
+	err := state.GetAppState().ClearAuthToken()
+	if err != nil {
+		logrus.Errorf("Failed to clear auth token: %v", err)
+	}
 	// Disable navigation buttons
 	sm.mainScreen.navigationBar.UpdateAuthenticationState(sm.isAuth)
 	sm.ShowPage(NewLoginPage())
